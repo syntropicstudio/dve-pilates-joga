@@ -42,7 +42,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <p className="mt-2 text-muted-foreground">Něco se pokazilo. Zkus to prosím znovu.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button onClick={() => { router.invalidate(); reset(); }} className="btn btn-primary">Zkusit znovu</button>
-          <a href="/" className="btn btn-ghost">Na úvod</a>
+          <Link to="/" className="btn btn-ghost">Na úvod</Link>
         </div>
       </div>
     </div>
@@ -63,7 +63,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "icon", type: "image/png", href: `${import.meta.env.BASE_URL}favicon.png` },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
