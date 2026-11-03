@@ -12,3 +12,5 @@
 - Demo data layer lives in `src/services/store.ts` (localStorage + useSyncExternalStore); UI must only use its functions so a real backend can replace it later.
 - Unknown external links/contacts live as `null` in `src/config/site.ts`; UI shows a "brzy doplníme" fallback instead of invented URLs.
 - Demo image updates belong in the store's load normalization, filling only untouched original placeholders, so existing reservations and user-provided images survive.
+- GitHub Pages uses an opt-in TanStack Start SPA-shell build and publishes only `dist/client`; preserve the normal Lovable SSR build so preview remains supported.
+- GitHub Pages downloads asset pointers into ignored `.output/pages-public` build inputs and prefixes media URLs with the hosting base path; deployment must not depend on the Lovable proxy at runtime.

@@ -1,4 +1,26 @@
-# Welcome to your Lovable project
+# DVĚ – jóga a pilates
+
+## Spuštění na GitHub Pages
+
+Vzhled webu zůstává stejný. Tato verze nemá společné rezervace ani chráněnou administraci: změny se ukládají pouze v prohlížeči návštěvníka. Nezadávejte skutečné osobní údaje. E-maily ani platby se neodesílají.
+
+1. V Lovable propojte projekt s GitHubem přes **Settings → Git**.
+2. Na GitHubu otevřete **Settings → Pages → Build and deployment → Source** a vyberte **GitHub Actions**. Dostupnost Pages u soukromého repozitáře závisí na vašem GitHub tarifu.
+3. V záložce **Actions** vyberte **Nasazení DVĚ na GitHub Pages** a klikněte na **Run workflow**. Automatické nasazení běží při změnách větve `main`; používáte-li jinou větev, upravte ji v `.github/workflows/github-pages.yml`.
+4. Po dokončení najdete adresu webu v **Settings → Pages**. Administraci otevřete přidáním `/admin` k adrese webu (za případný název repozitáře).
+
+Cesty se přizpůsobí repozitáři automaticky. Logo i fotografie se přibalí do webu. Pokud zdroj původních fotografií přestane být dostupný, nové sestavení se zastaví; již nasazený web fotografie dál obsahuje.
+
+Přímé odkazy a obnovení fungují u pěti původních ukázkových akcí, jejich rezervací a administrace. Nová akce vytvořená ve vašem prohlížeči se otevře také přes záložní stránku, ale GitHub u neznámé adresy vrací stav 404. Ostatní lidé tuto lokálně vytvořenou akci neuvidí.
+
+### Místní příprava
+
+```sh
+bun install
+VITE_BASE_PATH=/nazev-repozitare/ bun run build:pages
+```
+
+Na GitHub Pages se nahrává pouze obsah `dist/client`, nikoli zdrojové soubory ani server. Pro vlastní doménu nebo repozitář `uzivatel.github.io` je základní cesta `/`.
 
 This project was built with [Lovable](https://lovable.dev).
 
