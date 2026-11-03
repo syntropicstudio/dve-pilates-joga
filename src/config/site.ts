@@ -12,13 +12,13 @@ export const site = {
     "DVĚ – jóga a pilates. Online lekce na Forendors, pravidelné lekce naživo, workshopy a víkendové pobyty pro všechny úrovně.",
 
   /** Odkaz na profil DVĚ na Forendors, např. "https://www.forendors.cz/..." */
-  forendorsUrl: null as string | null,
+  forendorsUrl: "https://www.forendors.cz/" as string | null,
   /** YouTube URL ukázkové lekce (watch?v=…, youtu.be/…, shorts/…) */
-  youtubeUrl: null as string | null,
+  youtubeUrl: "https://www.youtube.com/watch?v=3DcoC8p9az8&list=RD3DcoC8p9az8&start_radio=1" as string | null,
   /** Kontaktní e-mail */
-  email: null as string | null,
+  email: "info@projektdve.cz" as string | null,
   /** Instagram profil */
-  instagramUrl: null as string | null,
+  instagramUrl: "https://www.instagram.com/" as string | null,
   /** Další sociální sítě */
   facebookUrl: null as string | null,
   /** Oblast působení */
