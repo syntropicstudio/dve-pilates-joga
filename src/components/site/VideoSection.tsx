@@ -7,6 +7,7 @@ export function FreeLessonVideo() {
   const id = youtubeId(site.youtubeUrl);
   const [play, setPlay] = useState(false);
   return (
+    <>
     <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-cocoa shadow-[var(--shadow-lift)]">
       {id && play ? (
         <iframe
@@ -34,5 +35,11 @@ export function FreeLessonVideo() {
         </div>
       )}
     </div>
+    {site.youtubeUrl && (
+      <a href={site.youtubeUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 font-semibold underline underline-offset-4">
+        <Play className="h-4 w-4" /> Otevřít na YouTube
+      </a>
+    )}
+    </>
   );
 }
