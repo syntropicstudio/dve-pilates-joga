@@ -285,7 +285,7 @@ function Faq() {
           <img src={symbol.url} alt="" aria-hidden className="mt-8 hidden h-32 w-32 drift lg:block" loading="lazy" />
         </div>
         <Accordion type="single" collapsible className="w-full">
-          {faqs.map(([q, a]) => (
+          {faqs.map(([q = "", a]) => (
             <AccordionItem key={q} value={q} className="border-border">
               <AccordionTrigger className="py-5 text-left font-display text-xl hover:no-underline">{q}</AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">{a}</AccordionContent>
