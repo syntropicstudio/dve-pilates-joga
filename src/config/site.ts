@@ -46,7 +46,7 @@ export function youtubeId(url: string | null): string | null {
     if (u.hostname.includes("youtu.be")) return u.pathname.slice(1) || null;
     if (u.searchParams.get("v")) return u.searchParams.get("v");
     const m = u.pathname.match(/\/(embed|shorts|live)\/([\w-]{6,})/);
-    return m ? m[2] : null;
+    return m?.[2] ?? null;
   } catch {
     return null;
   }

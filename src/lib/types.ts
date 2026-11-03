@@ -15,14 +15,14 @@ export interface DveEvent {
   shortDescription: string;
   description: string;
   date: string; // YYYY-MM-DD
-  endDate?: string;
+  endDate?: string | undefined;
   time: string;
   location: string;
   price: number;
   capacity: number;
-  instructor?: string;
+  instructor?: string | undefined;
   bring: string[];
-  image?: string;
+  image?: string | undefined;
   published: boolean;
   demo: boolean;
 }
@@ -46,7 +46,7 @@ export interface Reservation {
   email: string;
   phone: string;
   seats: number;
-  note?: string;
+  note?: string | undefined;
   status: ReservationStatus;
   payment: PaymentState;
   createdAt: string;
@@ -55,6 +55,6 @@ export interface Reservation {
 export interface GalleryItem {
   id: string;
   caption: string;
-  src?: string;
+  src?: string | undefined;
   ratio: "square" | "tall" | "wide";
 }
