@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowRight, Instagram, Mail, MapPin, X } from "lucide-react";
+import { ArrowRight, Instagram, Mail, X } from "lucide-react";
 import hero from "@/assets/zakladatelky-trava.jpg.asset.json";
 import about from "@/assets/zakladatelky-o-nas.jpg.asset.json";
 import symbol from "@/assets/dve-symbol.png.asset.json";
@@ -225,7 +225,7 @@ function Gallery() {
       <div className="mx-auto max-w-7xl px-5">
         <p className="eyebrow">Galerie</p>
         <h2 className="mt-3 max-w-2xl text-4xl sm:text-5xl">Momentky z našich společných chvil</h2>
-        <p className="mt-4 text-muted-foreground">Fotografie z prvních akcí sem brzy přidáme.</p>
+        <p className="mt-4 text-muted-foreground">Zatím ilustrační fotografie vytvořené pomocí AI. Skutečné momentky z našich akcí doplníme později.</p>
         <div className="mt-10 grid auto-rows-[180px] grid-cols-2 gap-4 lg:grid-cols-4">
           {gallery.map((g, i) => (
             <button
@@ -302,7 +302,6 @@ function Contact() {
     { icon: Mail, label: "E-mail", value: site.email, href: site.email ? `mailto:${site.email}` : null },
     { icon: Instagram, label: "Instagram", value: site.instagramUrl ? "Sleduj nás" : null, href: site.instagramUrl },
     { icon: ArrowRight, label: "Forendors", value: site.forendorsUrl ? "Online lekce" : null, href: site.forendorsUrl },
-    { icon: MapPin, label: "Kde působíme", value: site.location, href: null },
   ];
   return (
     <section id="kontakt" className="pb-24">

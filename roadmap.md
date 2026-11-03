@@ -1,0 +1,3 @@
+- [x] Doplnit zadané odkazy a e-mail; odstranit Kde působíme.
+- [ ] Vytvořit a zapojit ilustrační fotografie akcí a galerie i pro uložené demo.
+- [ ] Ověřit odkazy, fotografie, detail akce a galerii.
