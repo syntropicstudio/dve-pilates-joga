@@ -1,3 +1,6 @@
 - [x] Doplnit zadané odkazy a e-mail; odstranit Kde působíme.
 - [x] Vytvořit a zapojit ilustrační fotografie akcí a galerie i pro uložené demo.
 - [x] Ověřit odkazy, fotografie, detail akce a galerii.
+- [ ] Připravit statické sestavení pro GitHub Pages včetně cest v podadresáři.
+- [ ] Přidat automatické nasazení a český návod.
+- [ ] Ověřit navigaci, rezervaci a demo správu bez serveru.
