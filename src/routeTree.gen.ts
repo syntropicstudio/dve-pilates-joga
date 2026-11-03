@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AkceIdRouteImport } from './routes/akce.$id'
+import { Route as RezervaceIdRouteImport } from './routes/rezervace.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AkceIdRoute = AkceIdRouteImport.update({
+  id: '/akce/$id',
+  path: '/akce/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RezervaceIdRoute = RezervaceIdRouteImport.update({
+  id: '/rezervace/$id',
+  path: '/rezervace/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/akce/$id': typeof AkceIdRoute
+  '/rezervace/$id': typeof RezervaceIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/akce/$id': typeof AkceIdRoute
+  '/rezervace/$id': typeof RezervaceIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
+  '/akce/$id': typeof AkceIdRoute
+  '/rezervace/$id': typeof RezervaceIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/admin' | '/akce/$id' | '/rezervace/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/admin' | '/akce/$id' | '/rezervace/$id'
+  id: '__root__' | '/' | '/admin' | '/akce/$id' | '/rezervace/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
+  AkceIdRoute: typeof AkceIdRoute
+  RezervaceIdRoute: typeof RezervaceIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/akce/$id': {
+      id: '/akce/$id'
+      path: '/akce/$id'
+      fullPath: '/akce/$id'
+      preLoaderRoute: typeof AkceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rezervace/$id': {
+      id: '/rezervace/$id'
+      path: '/rezervace/$id'
+      fullPath: '/rezervace/$id'
+      preLoaderRoute: typeof RezervaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
+  AkceIdRoute: AkceIdRoute,
+  RezervaceIdRoute: RezervaceIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
