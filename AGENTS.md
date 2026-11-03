@@ -11,3 +11,4 @@
 
 - Demo data layer lives in `src/services/store.ts` (localStorage + useSyncExternalStore); UI must only use its functions so a real backend can replace it later.
 - Unknown external links/contacts live as `null` in `src/config/site.ts`; UI shows a "brzy doplníme" fallback instead of invented URLs.
+- Demo image updates belong in the store's load normalization, filling only untouched original placeholders, so existing reservations and user-provided images survive.

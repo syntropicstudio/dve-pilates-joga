@@ -27,11 +27,26 @@ function load(): State {
   if (state) return state;
   try {
     const raw = localStorage.getItem(KEY);
-    state = raw ? { ...initial(), ...JSON.parse(raw) } : initial();
+    const loaded: State = raw ? { ...initial(), ...JSON.parse(raw) } : initial();
+    // Doplňte nové ilustrační fotky pouze do původních prázdných ukázek.
+    // Vlastní fotografie, změny akcí i rezervace zůstávají zachovány.
+    state = {
+      ...loaded,
+      events: loaded.events.map((ev) => {
+        const demo = demoEvents.find((item) => item.id === ev.id);
+        return ev.demo && !ev.image && demo?.image ? { ...ev, image: demo.image } : ev;
+      }),
+      gallery: loaded.gallery.map((item) => {
+        const demo = demoGallery.find((entry) => entry.id === item.id);
+        return !item.src && item.caption.startsWith("Místo pro ") && demo
+          ? { ...item, src: demo.src, caption: demo.caption }
+          : item;
+      }),
+    };
   } catch {
     state = initial();
   }
-  return state!;
+  return state ?? serverState;
 }
 
 function save(next: State) {

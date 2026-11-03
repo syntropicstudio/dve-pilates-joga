@@ -1,4 +1,10 @@
 import type { DveEvent, GalleryItem } from "@/lib/types";
+import yoga from "@/assets/joga-v-parku.jpg";
+import pilates from "@/assets/pilates-studio.jpg";
+import workshop from "@/assets/workshop-dech.jpg";
+import retreat from "@/assets/jogovy-pobyt.jpg";
+import picnic from "@/assets/piknik-po-joze.jpg";
+import mats from "@/assets/podlozky-detail.jpg";
 
 /** Ukázková data – NEJDE o skutečnou nabídku. */
 export const demoEvents: DveEvent[] = [
@@ -6,6 +12,7 @@ export const demoEvents: DveEvent[] = [
     id: "ranni-joga-v-parku",
     title: "Ranní jóga v parku",
     category: "joga",
+    image: yoga,
     shortDescription: "Klidné probuzení těla i mysli pod širým nebem.",
     description:
       "Hodinová lekce plynulé jógy vhodná pro všechny úrovně. Začneme dechem, protáhneme celé tělo a zakončíme krátkou relaxací.",
@@ -22,6 +29,7 @@ export const demoEvents: DveEvent[] = [
     id: "pilates-stred-tela",
     title: "Pilates: síla středu těla",
     category: "pilates",
+    image: pilates,
     shortDescription: "Stabilita, držení těla a vědomá práce s hlubokými svaly.",
     description:
       "Lekce zaměřená na střed těla, stabilitu pánve a správné držení. Pomalé tempo, důraz na techniku a dech.",
@@ -38,6 +46,7 @@ export const demoEvents: DveEvent[] = [
     id: "workshop-dech-a-uvolneni",
     title: "Workshop: dech a uvolnění",
     category: "workshop",
+    image: workshop,
     shortDescription: "Tříhodinové setkání o dechu, protažení a odpočinku.",
     description:
       "Tematický workshop, kde propojíme dechová cvičení, jemnou jógu a relaxační techniky. Odneseš si sestavu, kterou zvládneš i doma.",
@@ -54,6 +63,7 @@ export const demoEvents: DveEvent[] = [
     id: "jarni-vikend-v-prirode",
     title: "Jarní víkend v přírodě",
     category: "pobyt",
+    image: retreat,
     shortDescription: "Dva dny jógy, pilates, procházek a dobrého jídla.",
     description:
       "Víkendový pobyt plný pohybu, odpočinku a společných chvil. Program, ubytování a strava budou upřesněny.",
@@ -71,6 +81,7 @@ export const demoEvents: DveEvent[] = [
     id: "den-pohybu",
     title: "Den pohybu a radosti",
     category: "event",
+    image: picnic,
     shortDescription: "Jednodenní event: jóga, pilates a společný piknik.",
     description:
       "Celý den pohybu – dopoledne jóga, odpoledne pilates a mezi tím společný piknik. Ideální pro začátečníky i pokročilé.",
@@ -86,10 +97,10 @@ export const demoEvents: DveEvent[] = [
 ];
 
 export const demoGallery: GalleryItem[] = [
-  { id: "g1", caption: "Místo pro fotografii z lekce", ratio: "tall" },
-  { id: "g2", caption: "Místo pro fotografii z workshopu", ratio: "square" },
-  { id: "g3", caption: "Místo pro fotografii z pobytu", ratio: "wide" },
-  { id: "g4", caption: "Místo pro fotografii z eventu", ratio: "square" },
-  { id: "g5", caption: "Místo pro společnou fotku", ratio: "tall" },
-  { id: "g6", caption: "Místo pro momentku", ratio: "square" },
+  { id: "g1", caption: "Jóga pod širým nebem – AI ilustrace", src: yoga, ratio: "tall" },
+  { id: "g2", caption: "Chvíle pro dech a zklidnění – AI ilustrace", src: workshop, ratio: "square" },
+  { id: "g3", caption: "Víkendový pohyb v přírodě – AI ilustrace", src: retreat, ratio: "wide" },
+  { id: "g4", caption: "Společný piknik po cvičení – AI ilustrace", src: picnic, ratio: "square" },
+  { id: "g5", caption: "Podložka a čas pro sebe – AI ilustrace", src: mats, ratio: "tall" },
+  { id: "g6", caption: "Pilates ve studiu – AI ilustrace", src: pilates, ratio: "square" },
 ];
