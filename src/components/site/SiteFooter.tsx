@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import symbol from "@/assets/dve-symbol.png.asset.json";
+import symbol from "@/assets/dve-symbol.png";
 import { navItems, site } from "@/config/site";
 
 export function SiteFooter() {
@@ -9,7 +9,7 @@ export function SiteFooter() {
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 md:grid-cols-[1.3fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-3">
-            <img src={symbol.url} alt="" className="h-14 w-14" width={56} height={56} loading="lazy" />
+            <img src={symbol} alt="" className="h-14 w-14" width={56} height={56} loading="lazy" />
             <div>
               <p className="font-display text-4xl leading-none">Dvě</p>
               <p className="text-sm text-cream/70">jóga a pilates</p>

@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import logo from "@/assets/dve-logo.png.asset.json";
+import logo from "@/assets/dve-logo.png";
 import { navItems } from "@/config/site";
 
 export function SiteHeader() {
@@ -10,7 +10,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 lg:h-18">
         <Link to="/" hash="uvod" className="shrink-0" aria-label="DVĚ – jóga a pilates, úvod">
-          <img src={logo.url} alt="DVĚ – jóga a pilates" className="h-10 w-auto lg:h-11" width={84} height={44} />
+          <img src={logo} alt="DVĚ – jóga a pilates" className="h-10 w-auto lg:h-11" width={84} height={44} />
         </Link>
         <nav aria-label="Hlavní navigace" className="hidden items-center gap-1 xl:flex">
           {navItems.map((n) => (

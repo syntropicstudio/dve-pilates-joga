@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { ArrowRight, Instagram, Mail, X } from "lucide-react";
-import hero from "@/assets/zakladatelky-trava.jpg.asset.json";
-import about from "@/assets/zakladatelky-o-nas.jpg.asset.json";
-import symbol from "@/assets/dve-symbol.png.asset.json";
+import hero from "@/assets/zakladatelky-trava.jpg";
+import about from "@/assets/zakladatelky-o-nas.jpg";
+import symbol from "@/assets/dve-symbol.png";
 import { site } from "@/config/site";
 import { useStore, freeSeats } from "@/services/store";
 import { categoryLabels, type EventCategory } from "@/lib/types";
@@ -60,7 +60,7 @@ function Hero() {
         <div className="reveal relative order-1 lg:order-2">
           <div className="overflow-hidden rounded-[2.5rem] shadow-[var(--shadow-lift)] lg:rounded-[3.5rem_1.5rem_3.5rem_1.5rem]">
             <img
-              src={hero.url}
+              src={hero}
               alt="Dvě zakladatelky DVĚ se smějí, leží hlavami k sobě v trávě"
               className="aspect-[4/3] w-full object-cover"
               width={1920}
@@ -68,7 +68,7 @@ function Hero() {
               fetchPriority="high"
             />
           </div>
-          <img src={symbol.url} alt="" aria-hidden className="absolute -bottom-8 -left-6 h-24 w-24 drift sm:h-28 sm:w-28" />
+          <img src={symbol} alt="" aria-hidden className="absolute -bottom-8 -left-6 h-24 w-24 drift sm:h-28 sm:w-28" />
         </div>
       </div>
     </section>
@@ -82,7 +82,7 @@ function About() {
         <div className="relative">
           <div className="absolute -right-4 -top-4 h-full w-full rounded-[3rem] bg-sun/70" aria-hidden />
           <img
-            src={about.url}
+            src={about}
             alt="Zakladatelky DVĚ sedí spolu v trávě"
             loading="lazy"
             className="relative aspect-[3/2] w-full rounded-[3rem] object-cover"
@@ -239,7 +239,7 @@ function Gallery() {
                 <img src={g.src} alt={g.caption} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               ) : (
                 <span className="grid h-full place-items-center p-4 text-center text-sm text-cocoa/60">
-                  <img src={symbol.url} alt="" className="mb-2 h-10 w-10 opacity-60" />
+                  <img src={symbol} alt="" className="mb-2 h-10 w-10 opacity-60" />
                   {g.caption}
                 </span>
               )}
@@ -282,7 +282,7 @@ function Faq() {
         <div>
           <p className="eyebrow">FAQ</p>
           <h2 className="mt-3 text-4xl sm:text-5xl">Časté dotazy</h2>
-          <img src={symbol.url} alt="" aria-hidden className="mt-8 hidden h-32 w-32 drift lg:block" loading="lazy" />
+          <img src={symbol} alt="" aria-hidden className="mt-8 hidden h-32 w-32 drift lg:block" loading="lazy" />
         </div>
         <Accordion type="single" collapsible className="w-full">
           {faqs.map(([q = "", a]) => (

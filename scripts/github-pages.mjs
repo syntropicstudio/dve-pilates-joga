@@ -5,14 +5,6 @@ const paths = ['/', '/admin', ...eventIds.flatMap(id => [`/akce/${id}`, `/rezerv
 async function prepare() {
   await mkdir('.output/pages-public', { recursive: true });
   await cp('public', '.output/pages-public', { recursive: true });
-  for (const name of ['dve-logo.png', 'dve-symbol.png', 'zakladatelky-o-nas.jpg', 'zakladatelky-trava.jpg']) {
-    const pointer = JSON.parse(await readFile(`src/assets/${name}.asset.json`, 'utf8'));
-    const response = await fetch(new URL(pointer.url, 'https://id-preview--3f8d2e8b-6dd0-466f-ac03-a50ce0aa1898.lovable.app'));
-    if (!response.ok || !response.headers.get('content-type')?.startsWith('image/')) throw new Error(`Fotografii ${name} nelze stáhnout (${response.status}).`);
-    const destination = resolve('.output/pages-public', `.${pointer.url}`);
-    await mkdir(resolve(destination, '..'), { recursive: true });
-    await writeFile(destination, Buffer.from(await response.arrayBuffer()));
-  }
 }
 async function finalize() {
   const output = resolve('dist/client');
