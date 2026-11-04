@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
 import { demoEvents, demoGallery } from "@/data/demo";
 
 describe("Demo image updates", () => {
@@ -16,20 +15,25 @@ describe("Demo image updates", () => {
   });
 
   it("updates saved placeholders without removing reservations or custom photos", async () => {
-    const events = demoEvents.map(({ image: _image, ...event }) => event);
-    const reservation = { id: "R-KEEP", eventId: events[0]?.id, seats: 1, status: "nova" };
-    localStorage.setItem("dve-demo-v1", JSON.stringify({
+    const v2 = (await import("@/data/repositories/mock/mock-db")).initialState();
+    const events = v2.events.map(({ image: _image, ...event }) => event);
+    const reservation = {
+      id: "R-KEEP", eventId: events[0]?.id, customerName: "Test", customerEmail: "t@example.com", customerPhone: "123456789",
+      numberOfSpots: 1, reservationStatus: "confirmed", paymentStatus: "paid", createdAt: "2026-01-01T00:00:00.000Z",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+    localStorage.setItem("dve-demo-v2", JSON.stringify({
       events: events.map((event, i) => i === 1 ? { ...event, image: "/custom.jpg" } : event),
       reservations: [reservation],
-      gallery: [{ id: "g1", caption: "Místo pro fotografii z lekce", ratio: "tall" },
-        { id: "g2", caption: "Moje fotka", src: "/gallery-custom.jpg", ratio: "square" }],
+      gallery: [{ id: "g1", caption: "Místo pro fotografii z lekce", ratio: "tall", sortOrder: 1 },
+        { id: "g2", caption: "Moje fotka", src: "/gallery-custom.jpg", ratio: "square", sortOrder: 2 }],
     }));
-    const { useStore } = await import("@/services/store");
-    const { result } = renderHook(() => useStore());
-    expect(result.current.events[0]?.image).toBe(demoEvents[0]?.image);
-    expect(result.current.events[1]?.image).toBe("/custom.jpg");
-    expect(result.current.reservations).toEqual([reservation]);
-    expect(result.current.gallery[0]?.src).toBe(demoGallery[0]?.src);
-    expect(result.current.gallery[1]?.src).toBe("/gallery-custom.jpg");
+    const { readState } = await import("@/data/repositories/mock/mock-db");
+    const state = readState();
+    expect(state.events[0]?.image).toBe(demoEvents[0]?.image);
+    expect(state.events[1]?.image).toBe("/custom.jpg");
+    expect(state.reservations).toEqual([reservation]);
+    expect(state.gallery[0]?.src).toBe(demoGallery[0]?.src);
+    expect(state.gallery[1]?.src).toBe("/gallery-custom.jpg");
   });
 });

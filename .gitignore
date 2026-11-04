@@ -32,3 +32,6 @@ dist-ssr
 *.sw?
 
 package-lock.json
+
+# Lokální proměnné prostředí (vzor je v .env.example)
+.env

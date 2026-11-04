@@ -5,7 +5,10 @@ import hero from "@/assets/zakladatelky-trava.jpg";
 import about from "@/assets/zakladatelky-o-nas.jpg";
 import symbol from "@/assets/dve-symbol.png";
 import { site } from "@/config/site";
-import { useStore, freeSeats } from "@/services/store";
+import { usePublishedEvents } from "@/hooks/data/use-events";
+import { useGallery } from "@/hooks/data/use-gallery";
+import { EventGridSkeleton, GallerySkeleton } from "@/components/site/Skeletons";
+import { LoadError } from "@/components/site/LoadError";
 import { categoryLabels, type EventCategory } from "@/lib/types";
 import { EventCard } from "@/components/site/EventCard";
 import { FreeLessonVideo } from "@/components/site/VideoSection";
@@ -169,14 +172,12 @@ function FreeLesson() {
 }
 
 function Events() {
-  const s = useStore();
+  const { data: published, isPending, isError, refetch } = usePublishedEvents();
   const [cat, setCat] = useState<EventCategory | "vse">("vse");
+  // Repozitář vrací jen publikované akce seřazené podle termínu.
   const events = useMemo(
-    () =>
-      s.events
-        .filter((e) => e.published && (cat === "vse" || e.category === cat))
-        .sort((a, b) => a.date.localeCompare(b.date)),
-    [s.events, cat],
+    () => (published ?? []).filter((e) => cat === "vse" || e.category === cat),
+    [published, cat],
   );
   const cats: (EventCategory | "vse")[] = ["vse", "joga", "pilates", "workshop", "event", "pobyt"];
   return (
@@ -205,17 +206,21 @@ function Events() {
             </button>
           ))}
         </div>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {events.map((ev) => <EventCard key={ev.id} ev={ev} free={freeSeats(s, ev)} />)}
-        </div>
-        {events.length === 0 && <p className="mt-10 text-muted-foreground">V této kategorii teď nic nechystáme. Zkus jinou.</p>}
+        {isError ? (
+          <LoadError className="mt-10" message="Akce se teď nepodařilo načíst." onRetry={() => void refetch()} />
+        ) : (
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {isPending ? <EventGridSkeleton /> : events.map((ev) => <EventCard key={ev.id} ev={ev} free={ev.availableSpots} />)}
+          </div>
+        )}
+        {!isPending && !isError && events.length === 0 && <p className="mt-10 text-muted-foreground">V této kategorii teď nic nechystáme. Zkus jinou.</p>}
       </div>
     </section>
   );
 }
 
 function Gallery() {
-  const { gallery } = useStore();
+  const { data: gallery = [], isPending, isError, refetch } = useGallery();
   const [open, setOpen] = useState<number | null>(null);
   const item = open !== null ? gallery[open] : null;
   const ratio = { tall: "row-span-2", square: "", wide: "sm:col-span-2" };
@@ -226,7 +231,9 @@ function Gallery() {
         <p className="eyebrow">Galerie</p>
         <h2 className="mt-3 max-w-2xl text-4xl sm:text-5xl">Momentky z našich společných chvil</h2>
         <p className="mt-4 text-muted-foreground">Zatím ilustrační fotografie vytvořené pomocí AI. Skutečné momentky z našich akcí doplníme později.</p>
+        {isError && <LoadError className="mt-10" message="Galerii se teď nepodařilo načíst." onRetry={() => void refetch()} />}
         <div className="mt-10 grid auto-rows-[180px] grid-cols-2 gap-4 lg:grid-cols-4">
+          {isPending && <GallerySkeleton />}
           {gallery.map((g, i) => (
             <button
               key={g.id}
