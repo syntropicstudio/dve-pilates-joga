@@ -1,9 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ArrowLeft, CheckCircle2, Info } from "lucide-react";
-import { useStore, freeSeats, createReservation, formatDate, formatPrice } from "@/services/store";
+import { formatEventDate, formatPrice } from "@/lib/format";
 import type { Reservation } from "@/lib/types";
-import { statusLabels } from "@/lib/types";
+import { reservationStatusLabels } from "@/lib/types";
+import { usePublishedEvent } from "@/hooks/data/use-events";
+import { useCreateReservation } from "@/hooks/data/use-reservations";
+import { reservationService } from "@/services/reservation-service";
+import { spotsErrorMessage, type ReservationField } from "@/lib/reservation-validation";
+import { PageSkeleton } from "@/components/site/Skeletons";
+import { PageLoadError } from "@/components/site/LoadError";
 
 export const Route = createFileRoute("/rezervace/$id")({
   head: () => ({
@@ -22,13 +28,23 @@ export const Route = createFileRoute("/rezervace/$id")({
 
 type Errors = Partial<Record<"name" | "email" | "phone" | "seats" | "consent" | "form", string>>;
 
+/** Pole modelu → id pole ve formuláři (id zůstávají kvůli zachování markupu). */
+const fieldIds: Record<ReservationField, keyof Errors> = {
+  customerName: "name",
+  customerEmail: "email",
+  customerPhone: "phone",
+  numberOfSpots: "seats",
+};
+
 function Booking() {
   const { id } = Route.useParams();
-  const s = useStore();
-  const ev = s.events.find((e) => e.id === id && e.published);
+  const { data: ev, isPending, isError, refetch } = usePublishedEvent(id);
+  const createReservation = useCreateReservation();
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState<Reservation | null>(null);
 
+  if (isPending) return <PageSkeleton variant="booking" />;
+  if (isError && !ev) return <PageLoadError onRetry={() => void refetch()} />;
   if (!ev)
     return (
       <div className="mx-auto max-w-xl px-5 py-24 text-center">
@@ -36,7 +52,7 @@ function Booking() {
         <Link to="/" hash="akce" className="btn btn-primary mt-8">Zpět na akce</Link>
       </div>
     );
-  const free = freeSeats(s, ev);
+  const free = ev.availableSpots;
 
   if (done)
     return (
@@ -49,35 +65,39 @@ function Booking() {
         <dl className="mt-8 grid grid-cols-2 gap-3 rounded-3xl bg-card p-6 text-left shadow-[var(--shadow-soft)]">
           <dt className="text-muted-foreground">Číslo</dt><dd className="font-semibold">{done.id}</dd>
           <dt className="text-muted-foreground">Akce</dt><dd className="font-semibold">{ev.title}</dd>
-          <dt className="text-muted-foreground">Míst</dt><dd className="font-semibold">{done.seats}</dd>
-          <dt className="text-muted-foreground">Stav</dt><dd className="font-semibold">{statusLabels[done.status]} (simulace)</dd>
+          <dt className="text-muted-foreground">Míst</dt><dd className="font-semibold">{done.numberOfSpots}</dd>
+          <dt className="text-muted-foreground">Stav</dt><dd className="font-semibold">{reservationStatusLabels[done.reservationStatus]} (simulace)</dd>
         </dl>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link to="/akce/$id" params={{ id: ev.id }} className="btn btn-ghost">Zpět na detail akce</Link>
+          <Link to="/akce/$id" params={{ id: ev.slug }} className="btn btn-ghost">Zpět na detail akce</Link>
           <Link to="/" hash="akce" className="btn btn-primary">Další akce</Link>
         </div>
       </div>
     );
 
-  function submit(e: FormEvent<HTMLFormElement>) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!ev || createReservation.isPending) return;
     const f = new FormData(e.currentTarget);
-    const name = String(f.get("name") ?? "").trim();
-    const email = String(f.get("email") ?? "").trim();
-    const phone = String(f.get("phone") ?? "").trim();
-    const seats = Number(f.get("seats"));
     const note = String(f.get("note") ?? "").trim();
+    const input = {
+      eventId: ev.id,
+      customerName: String(f.get("name") ?? "").trim(),
+      customerEmail: String(f.get("email") ?? "").trim(),
+      customerPhone: String(f.get("phone") ?? "").trim(),
+      numberOfSpots: Number(f.get("seats")),
+      note: note || undefined,
+    };
+    // Klientská validace slouží jen pro pohodlí; o dostupnosti rozhoduje repozitář (v produkci databáze).
     const err: Errors = {};
-    if (name.length < 3) err.name = "Vyplň prosím jméno a příjmení.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = "Zadej platný e-mail.";
-    if (!/^\+?[\d\s]{9,16}$/.test(phone)) err.phone = "Zadej platné telefonní číslo.";
-    if (!Number.isInteger(seats) || seats < 1) err.seats = "Počet míst musí být alespoň 1.";
-    else if (seats > free) err.seats = `Volných míst je už jen ${free}.`;
+    for (const [field, message] of Object.entries(reservationService.validate(input)))
+      err[fieldIds[field as ReservationField]] = message;
+    if (!err.seats && input.numberOfSpots > free) err.seats = spotsErrorMessage(free);
     if (!f.get("consent")) err.consent = "Pro pokračování potvrď souhlas.";
     setErrors(err);
     if (Object.keys(err).length) return;
-    const res = createReservation({ eventId: ev!.id, name, email, phone, seats, note: note || undefined });
-    if (!res.ok) setErrors({ form: res.error });
+    const res = await createReservation.mutateAsync(input);
+    if (!res.ok) setErrors({ form: res.message });
     else setDone(res.reservation);
   }
 
@@ -86,14 +106,14 @@ function Booking() {
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 lg:py-16">
-      <Link to="/akce/$id" params={{ id: ev.id }} className="inline-flex items-center gap-2 text-sm font-medium hover:text-rose">
+      <Link to="/akce/$id" params={{ id: ev.slug }} className="inline-flex items-center gap-2 text-sm font-medium hover:text-rose">
         <ArrowLeft className="h-4 w-4" /> Zpět na detail akce
       </Link>
       <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_1.4fr]">
         <aside className="h-fit rounded-3xl bg-blush p-7">
           <p className="eyebrow">Rezervace</p>
           <h1 className="mt-2 text-3xl">{ev.title}</h1>
-          <p className="mt-4 text-muted-foreground">{formatDate(ev)} · {ev.time}</p>
+          <p className="mt-4 text-muted-foreground">{formatEventDate(ev)} · {ev.timeLabel}</p>
           <p className="text-muted-foreground">{ev.location}</p>
           <p className="mt-4 font-display text-3xl">{formatPrice(ev.price)} <span className="font-sans text-base text-muted-foreground">/ osoba</span></p>
           <p className="mt-1 text-sm">Volná místa: {free}</p>

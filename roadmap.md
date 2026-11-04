@@ -5,3 +5,7 @@
 - [x] Přidat automatické nasazení a český návod.
 - [x] Ověřit cestování v podadresáři testy; rezervaci a demo správu v náhledu.
 - [ ] Ověřit hotové statické stránky na GitHub Pages — čeká na propojení repozitáře a první spuštění GitHub Actions uživatelem.
+- [x] Oddělit datovou vrstvu (repozitáře + mock), sjednotit modely a připravit dokumentaci SUPABASE_INTEGRATION.md.
+- [ ] Napojit Supabase (repozitáře, Auth, Edge Functions, RLS) – čeká na rozhodnutí uživatele.
+- [x] Připravit SQL migrace Supabase (schéma, RLS, atomické rezervace) a lokální testy.
+- [ ] Nasadit migrace do projektu DVE_PRODUCTION – čeká na schválení SQL uživatelem.

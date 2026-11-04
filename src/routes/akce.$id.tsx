@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CalendarDays, Clock, MapPin, Users, User } from "lucide-react";
-import { useStore, freeSeats, formatDate, formatPrice } from "@/services/store";
+import { formatEventDate, formatPrice } from "@/lib/format";
+import { usePublishedEvent } from "@/hooks/data/use-events";
+import { PageSkeleton } from "@/components/site/Skeletons";
+import { PageLoadError } from "@/components/site/LoadError";
 import { categoryLabels } from "@/lib/types";
 import { EventVisual } from "@/components/site/EventVisual";
 
@@ -20,8 +23,9 @@ export const Route = createFileRoute("/akce/$id")({
 
 function EventDetail() {
   const { id } = Route.useParams();
-  const s = useStore();
-  const ev = s.events.find((e) => e.id === id && e.published);
+  const { data: ev, isPending, isError, refetch } = usePublishedEvent(id);
+  if (isPending) return <PageSkeleton variant="detail" />;
+  if (isError && !ev) return <PageLoadError onRetry={() => void refetch()} />;
   if (!ev)
     return (
       <div className="mx-auto max-w-xl px-5 py-24 text-center">
@@ -30,7 +34,7 @@ function EventDetail() {
         <Link to="/" hash="akce" className="btn btn-primary mt-8">Zpět na akce</Link>
       </div>
     );
-  const free = freeSeats(s, ev);
+  const free = ev.availableSpots;
   const full = free === 0;
   return (
     <article className="mx-auto max-w-6xl px-5 py-10 lg:py-16">
@@ -40,12 +44,12 @@ function EventDetail() {
       <div className="mt-6 grid gap-10 lg:grid-cols-[1.2fr_1fr]">
         <div className="aspect-[4/3] overflow-hidden rounded-[2.5rem]"><EventVisual ev={ev} /></div>
         <div>
-          <p className="eyebrow">{categoryLabels[ev.category]}{ev.demo && " · ukázková akce"}</p>
+          <p className="eyebrow">{categoryLabels[ev.category]}{ev.isDemo && " · ukázková akce"}</p>
           <h1 className="mt-3 text-4xl sm:text-5xl">{ev.title}</h1>
           <p className="mt-5 text-lg text-muted-foreground">{ev.description}</p>
           <ul className="mt-6 space-y-3">
-            <li className="flex gap-3"><CalendarDays className="h-5 w-5 shrink-0 text-rose" />{formatDate(ev)}</li>
-            <li className="flex gap-3"><Clock className="h-5 w-5 shrink-0 text-rose" />{ev.time}</li>
+            <li className="flex gap-3"><CalendarDays className="h-5 w-5 shrink-0 text-rose" />{formatEventDate(ev)}</li>
+            <li className="flex gap-3"><Clock className="h-5 w-5 shrink-0 text-rose" />{ev.timeLabel}</li>
             <li className="flex gap-3"><MapPin className="h-5 w-5 shrink-0 text-rose" />{ev.location}</li>
             <li className="flex gap-3"><Users className="h-5 w-5 shrink-0 text-rose" />Kapacita {ev.capacity} · volných {free}</li>
             {ev.instructor && <li className="flex gap-3"><User className="h-5 w-5 shrink-0 text-rose" />{ev.instructor}</li>}
@@ -61,10 +65,10 @@ function EventDetail() {
             {full ? (
               <span className="btn bg-mist text-cocoa" aria-disabled>Obsazeno</span>
             ) : (
-              <Link to="/rezervace/$id" params={{ id: ev.id }} className="btn btn-primary">Rezervovat místo</Link>
+              <Link to="/rezervace/$id" params={{ id: ev.slug }} className="btn btn-primary">Rezervovat místo</Link>
             )}
           </div>
-          {ev.demo && <p className="mt-4 text-sm text-muted-foreground">Termín, cena i místo jsou ukázkové údaje.</p>}
+          {ev.isDemo && <p className="mt-4 text-sm text-muted-foreground">Termín, cena i místo jsou ukázkové údaje.</p>}
         </div>
       </div>
     </article>
