@@ -81,6 +81,9 @@ Zákazníci **nemají účty**. Přihlášení je jen pro administrátorky.
 | `20261104130000_core_schema.sql` | schéma `private`, výčtové typy, tabulky, CHECK omezení, cizí klíče, indexy, triggery `updated_at` |
 | `20261104130100_auth_rls_grants.sql` | `private.is_admin()`, `private.is_service_role()`, odebrání výchozích GRANTů, minimální GRANTy, RLS politiky |
 | `20261104130200_reservation_logic.sql` | pravidlo obsazenosti, trigger invariantu kapacity, ochrana akcí, `create_reservation`, `set_reservation_status`, expirace, veřejné čtecí funkce, pohled `admin_event_occupancy` |
+| `20261104150000_restrict_rls_auto_enable_execute.sql` | **čeká na schválení** – odebere EXECUTE z platformní funkce `public.rls_auto_enable()` rolím PUBLIC, anon, authenticated, service_role (funkci ani event trigger nemění; podmíněné – lokálně nic nedělá) |
+
+Stav nasazení v DVE_PRODUCTION: migrace 1–3 nasazené (4. 11. 2026), migrace 4 zatím **ne**.
 
 Další soubory:
 
@@ -91,6 +94,7 @@ Další soubory:
 | `supabase/tests/database/02_permissions_rls.test.sql` | pgTAP: GRANT, RLS, role anon / uživatel / admin, SECURITY DEFINER (46 testů) |
 | `supabase/tests/database/03_reservation_logic.test.sql` | pgTAP: rezervace, kapacita, expirace, změny stavu (30 testů) |
 | `supabase/tests/database/04_pre_deploy_regressions.test.sql` | pgTAP: regrese z kontroly před nasazením – lhůta vs. začátek akce, stav rezervace × platba, allowlist oprávnění funkcí, zrušená akce (30 testů) |
+| `supabase/tests/database/05_security_definer_audit.test.sql` | pgTAP: audit SECURITY DEFINER po nasazení – veřejné funkce a neplatné vstupy, autorizace `set_reservation_status`, eskalace oprávnění, `rls_auto_enable` (38 testů) |
 | `supabase/tests/concurrency/last_spot.sh` | skutečný souběh paralelních transakcí, scénáře A–C (lokální Docker) |
 
 Migrace jsou čistě aditivní (žádné `drop`, `truncate` ani mazání dat).
@@ -204,6 +208,38 @@ RLS je zapnuté na všech tabulkách `public` (ověřuje test). Admin oprávněn
 | `private.enforce_reservation_capacity()`, `private.validate_event()`, `private.clamp_pending_expiry_to_event_start()`, `private.set_updated_at()` | triggery | – | invariant kapacity a lhůty, kontrola akcí, zkrácení lhůt při posunu akce, `updated_at` |
 
 Všechny funkce mají `set search_path = ''` a plně kvalifikované názvy objektů; SECURITY DEFINER funkce vlastní `postgres`. Test `04_pre_deploy_regressions` hlídá **allowlist**: `anon` smí spustit jen `list_public_events` a `get_public_event`, `authenticated` navíc jen `set_reservation_status`, `is_admin`, `is_service_role` a `reservation_blocks_capacity`; seznam SECURITY DEFINER funkcí odpovídá tabulce výše. Schéma `private` není vystavené přes Data API (`config.toml` → `[api].schemas = public, graphql_public`) a `anon` k němu nemá `USAGE`.
+
+### 5.5 Audit SECURITY DEFINER po nasazení (4. 11. 2026)
+
+`npx supabase db advisors --remote` hlásí 7 varování `anon_/authenticated_security_definer_function_executable`. Ověřeno read-only dotazy proti DVE_PRODUCTION: všechny funkce DVĚ jsou na produkci **shodné s lokálním kódem** (zdroj, ACL, `search_path`), tabulková oprávnění a všech 14 politik také; žádná funkce DVĚ nedědí EXECUTE z PUBLIC.
+
+| # | Funkce | Role | Verdikt |
+|---|---|---|---|
+| 1–2 | `public.list_public_events()` | anon, authenticated | **záměrné** – veřejný katalog akcí (web čte anonymně i po přihlášení adminky) |
+| 3–4 | `public.get_public_event(p_slug)` | anon, authenticated | **záměrné** – detail akce podle slugu |
+| 5 | `public.set_reservation_status(...)` | authenticated | **záměrné** – RPC pro administraci; autorizace uvnitř |
+| 6–7 | `public.rls_auto_enable()` | anon, authenticated | **zbytečné oprávnění** (bez reálného dopadu) → odebrat migrací 4 |
+
+**Proč jsou veřejné funkce SECURITY DEFINER a je to bezpečné:**
+- Vrací jen `status = 'published'` (koncept, zrušená a archivovaná akce se nevrátí ani podle slugu) a pevný allowlist sloupců + agregované `available_spots`. Osobní údaje ani interní pole (`status`, `created_at`, …) nevrací.
+- Jsou `STABLE` (Postgres v nich nedovolí zápis), nemají dynamické SQL, slug je parametr (injekce i zástupné znaky jsou neškodné), neplatný vstup vrátí prázdný výsledek bez chybové hlášky.
+- `search_path = ''`, vlastník `postgres`, EXECUTE jen anon/authenticated/service_role (ne PUBLIC).
+- Přechod na SECURITY INVOKER by vyžadoval dát `anon` přímý SELECT na tabulku `events` (+ sloupcová práva) a EXECUTE na výpočet obsazenosti – útočná plocha by se **zvětšila**. Omezit `authenticated` nejde, protože přihlášená adminka prochází i veřejné stránky.
+
+**Proč je `set_reservation_status` pro authenticated v pořádku:**
+- První příkaz funkce ověří `private.is_admin()` (řádek v `admin_profiles` pro `auth.uid()` z ověřeného JWT) nebo skutečnou DB roli `service_role` (`current_setting('role')`); jinak `42501 forbidden` – **před** vyhledáním rezervace, takže funkce neprozradí ani existenci ID.
+- Podvržené claims (`role`, `is_admin`, `app_metadata`) práva nedají; roli admina si nelze přidělit (bez GRANT na `admin_profiles`).
+- Stav platby nemění, kapacitu hlídá funkce i trigger, přechody stavů jsou omezené.
+- Varianta SECURITY INVOKER by vyžadovala dát adminům UPDATE sloupce `reservation_status`, čímž by šlo obejít pravidla přechodů – horší.
+
+**`public.rls_auto_enable()` – platformní funkce Supabase:**
+- Vznikla při založení projektu (před migracemi DVĚ), vytvořila ji a vlastní ji role `postgres` (grantor v ACL = `postgres`), není součástí rozšíření, `SECURITY DEFINER`, `search_path = pg_catalog`.
+- Používá ji jen event trigger `ensure_rls` (`ddl_command_end`, zapnutý), který zapíná RLS na nových tabulkách v `public`.
+- EXECUTE pro PUBLIC/anon/authenticated/service_role má jen kvůli výchozím právům Supabase (`ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public … TO anon, authenticated, service_role`) a výchozímu EXECUTE pro PUBLIC.
+- Ověřeno na přesné kopii: přímé volání tělo funkce **nespustí** (i kdyby, `pg_event_trigger_ddl_commands()` mimo event trigger selže) → reálné riziko nulové. Event trigger funkci spouští bez ohledu na EXECUTE volající role → odebrání EXECUTE je bezpečné a RLS se na nových tabulkách zapíná dál.
+- Migrace 4 proto odebírá jen EXECUTE; vlastník `postgres` ho má dál.
+
+**Doporučení do budoucna:** výchozí práva Supabase dávají každé nové funkci ve `public` EXECUTE pro anon/authenticated. Každá migrace proto musí u nové funkce nejdřív `revoke all … from public, anon, authenticated` a pak udělit jen nutné (testy 04 a 05 hlídají allowlist).
 
 ## 6. Atomické rezervace a obsazenost
 
@@ -323,7 +359,7 @@ npx supabase stop              # zastavení kontejnerů
 
 Výsledky ověření (4. 11. 2026, lokálně):
 - `supabase db reset` – 3 migrace + seed bez chyb,
-- `supabase test db` – **4 soubory, 141 testů, PASS** (po kontrole před nasazením),
+- `supabase test db` – **5 souborů, 179 testů, PASS** (po auditu SECURITY DEFINER, včetně migrace 4),
 - `last_spot.sh` – **PASS** (A: 30 paralelních požadavků na 3 místa → přesně 3 rezervace; B: souběžné potvrzování + nové rezervace nepřekročí kapacitu 2; C: souběžné snížení kapacity nepřekročí kapacitu a po zrušení akce rezervace nevznikne),
 - kontrolní sabotáž: po odebrání zámku a triggeru test souběhu **selhal** (5/3 a 12/2 míst); po povolení SELECT pro anon selhal test oprávnění – testy tedy chyby skutečně odhalují,
 - `supabase db advisors --level warn` – bez nálezů.
@@ -411,7 +447,12 @@ Hotovo v databázových migracích (ověřeno lokálními testy):
 - [x] Souběžný test přeplnění (30 paralelních požadavků) a invariant kapacity v triggeru.
 - [x] Stav platby nemůže změnit anon, běžný uživatel ani administrátorka – jen backend.
 - [x] Roli admina si nelze přidělit z frontendu.
-- [x] SECURITY DEFINER funkce s prázdným `search_path` a omezeným EXECUTE.
+- [x] SECURITY DEFINER funkce s prázdným `search_path` a omezeným EXECUTE; varování advisoru vyhodnocena (kap. 5.5).
+
+Zbývá z auditu:
+- [ ] Nasadit migraci 4 (`rls_auto_enable`) po schválení; po nasazení `db advisors --remote` má hlásit jen 5 záměrných varování.
+- [ ] Nespouštět Supabase CLI proti produkci s `NODE_TLS_REJECT_UNAUTHORIZED=0` (vypíná ověření TLS certifikátů).
+- [ ] Po zapnutí MFA zvážit vyžadování `aal2` v `private.is_admin()`.
 
 Zbývá:
 - [ ] Nasadit migrace po schválení (kap. 9) a zopakovat `db advisors --remote`.
