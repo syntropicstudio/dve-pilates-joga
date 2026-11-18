@@ -13,8 +13,10 @@ export const site = {
 
   /** Odkaz na profil DVĚ na Forendors, např. "https://www.forendors.cz/..." */
   forendorsUrl: "https://www.forendors.cz/" as string | null,
-  /** YouTube URL ukázkové lekce (watch?v=…, youtu.be/…, shorts/…) */
+  /** YouTube URL ukázkových lekcí (watch?v=…, youtu.be/…, shorts/…) */
   youtubeUrl: "https://www.youtube.com/watch?v=3DcoC8p9az8&list=RD3DcoC8p9az8&start_radio=1" as string | null,
+  youtubeUrl2: null as string | null,
+  youtubeUrl3: null as string | null,
   /** Kontaktní e-mail */
   email: "info@projektdve.cz" as string | null,
   /** Instagram profil */

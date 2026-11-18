@@ -11,7 +11,7 @@ import { EventGridSkeleton, GallerySkeleton } from "@/components/site/Skeletons"
 import { LoadError } from "@/components/site/LoadError";
 import { categoryLabels, type EventCategory } from "@/lib/types";
 import { EventCard } from "@/components/site/EventCard";
-import { FreeLessonVideo } from "@/components/site/VideoSection";
+import { SmallLessonVideo } from "@/components/site/VideoSection";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/")({
@@ -34,7 +34,6 @@ function Home() {
       <Hero />
       <About />
       <Online />
-      <FreeLesson />
       <Events />
       <Gallery />
       <Faq />
@@ -114,9 +113,9 @@ function About() {
 }
 
 const onlineCards = [
-  { t: "Jóga pro každodenní pohodu", d: "Krátké i delší praxe, které se vejdou do běžného dne.", tone: "bg-sun/60" },
-  { t: "Pilates pro sílu a stabilitu", d: "Posílení středu těla a lepší držení – v klidném tempu.", tone: "bg-blush" },
-  { t: "Protažení, uvolnění a relaxace", d: "Chvíle pro tělo i hlavu, když potřebuješ zpomalit.", tone: "bg-mist/50" },
+  { t: "Jóga pro každodenní pohodu", d: "Krátké i delší praxe, které se vejdou do běžného dne.", tone: "bg-sun/60", url: site.youtubeUrl },
+  { t: "Pilates pro sílu a stabilitu", d: "Posílení středu těla a lepší držení – v klidném tempu.", tone: "bg-blush", url: site.youtubeUrl2 },
+  { t: "Protažení, uvolnění a relaxace", d: "Chvíle pro tělo i hlavu, když potřebuješ zpomalit.", tone: "bg-mist/50", url: site.youtubeUrl3 },
 ];
 
 function Online() {
@@ -132,8 +131,8 @@ function Online() {
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {onlineCards.map((c, i) => (
-            <div key={c.t} className={`rounded-3xl p-8 ${c.tone} ${i === 1 ? "md:translate-y-6" : ""}`}>
-              <span className="font-display text-5xl text-cocoa/30">0{i + 1}</span>
+            <div key={c.t} className={`rounded-3xl p-6 ${c.tone} ${i === 1 ? "md:translate-y-6" : ""}`}>
+              <SmallLessonVideo url={c.url} title={c.t} />
               <h3 className="mt-6 text-2xl">{c.t}</h3>
               <p className="mt-3 text-muted-foreground">{c.d}</p>
             </div>
@@ -151,21 +150,6 @@ function Online() {
             </>
           )}
         </div>
-      </div>
-    </section>
-  );
-}
-
-function FreeLesson() {
-  return (
-    <section className="bg-sun/30 py-20 lg:py-28">
-      <div className="mx-auto max-w-5xl px-5 text-center">
-        <p className="eyebrow">Zdarma</p>
-        <h2 className="mt-3 text-4xl sm:text-5xl">Vyzkoušej si lekci zdarma</h2>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-          Než se společně potkáme na podložce, pojď si s námi zacvičit z pohodlí domova.
-        </p>
-        <div className="mt-10"><FreeLessonVideo /></div>
       </div>
     </section>
   );
